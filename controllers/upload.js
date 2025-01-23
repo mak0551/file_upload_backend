@@ -1,7 +1,7 @@
 const cloudinary = require("../config/cloudinary.js");
-const fs = require("fs"); // For cleaning up local files after upload
+const fs = require("fs/promises"); // For cleaning up local files after upload
 
-const uploadFIle = async (req, res) => {
+const uploadFile = async (req, res) => {
   try {
     const fileUploadPromises = req.files.map(async (file) => {
       const result = await cloudinary.uploader.upload(file.path, {
@@ -9,7 +9,11 @@ const uploadFIle = async (req, res) => {
       });
 
       // Remove the local file after uploading to Cloudinary
-      fs.unlinkSync(file.path);
+      try {
+        await fs.unlink(file.path); // Promises-based unlink
+      } catch (err) {
+        console.error(`Failed to delete file ${file.path}:`, err.message);
+      }
 
       return result.secure_url; // Return the Cloudinary URL
     });
@@ -26,4 +30,4 @@ const uploadFIle = async (req, res) => {
   }
 };
 
-module.exports = uploadFIle;
+module.exports = uploadFile;
