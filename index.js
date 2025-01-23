@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs"); // For cleaning up local files after upload
@@ -12,6 +13,7 @@ cloudinary.config({
 });
 
 const app = express();
+app.use(cors());
 
 // Multer configuration (Disk Storage)
 const upload = multer({ dest: "uploads/" }); // Files temporarily stored in 'uploads' folder
@@ -20,11 +22,11 @@ const upload = multer({ dest: "uploads/" }); // Files temporarily stored in 'upl
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
     const filePath = req.file.path; // Path of the uploaded file
-
     // Upload to Cloudinary
     const result = await cloudinary.uploader.upload(filePath, {
       resource_type: "auto", // Handles both images and videos
     });
+    console.log(result);
 
     // Remove the local file after uploading to Cloudinary
     fs.unlinkSync(filePath);
